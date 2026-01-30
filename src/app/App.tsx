@@ -6,6 +6,8 @@ import { GeneratorScreen } from "../screens/GeneratorScreen";
 import { PracticeScreen } from "../screens/PracticeScreen";
 import { ProgressScreen } from "../screens/ProgressScreen";
 import { db } from "../storage/db";
+import { AppScaffold } from "../components/ui/AppScaffold";
+import { typography } from "./designSystem";
 
 type ScreenKey = "setup" | "generate" | "practice" | "progress";
 
@@ -22,6 +24,7 @@ export function App() {
   const [showNoteNames, setShowNoteNames] = useState(true);
   const [showSolfa, setShowSolfa] = useState(true);
   const [showNumbers, setShowNumbers] = useState(true);
+  const [showRoman, setShowRoman] = useState(true);
 
   useEffect(() => {
     db.exercises.toArray().then(setLibrary);
@@ -54,38 +57,66 @@ export function App() {
     setLogs(await db.logs.toArray());
   };
 
+  const handleLog = async () => {
+    if (!exercise) return;
+    const log: PracticeLog = {
+      id: "log-" + Date.now(),
+      exerciseId: exercise.id,
+      date: new Date().toLocaleDateString(),
+      tempoAchieved: exercise.tempo,
+      notes: "Logged practice session.",
+    };
+    await db.logs.put(log);
+    setLogs(await db.logs.toArray());
+  };
+
+  const handleVariation = () => {
+    setScreen("generate");
+  };
+
   const toggle = (key: "notes" | "solfa" | "numbers") => {
     if (key === "notes") setShowNoteNames((v) => !v);
     if (key === "solfa") setShowSolfa((v) => !v);
     if (key === "numbers") setShowNumbers((v) => !v);
   };
 
+  const toggleWithRoman = (key: "notes" | "solfa" | "numbers" | "roman") => {
+    if (key === "roman") setShowRoman((v) => !v);
+    else toggle(key);
+  };
+
   const navItems: { key: ScreenKey; label: string }[] = useMemo(
     () => [
-      { key: "setup", label: "Instrument Setup" },
-      { key: "generate", label: "Exercise Generator" },
-      { key: "practice", label: "Playback + Practice" },
+      { key: "setup", label: "Setup" },
+      { key: "generate", label: "Generate" },
+      { key: "practice", label: "Practice" },
       { key: "progress", label: "Progress" },
     ],
     [],
   );
 
   return (
-    <div className="app">
-      <h1>Solo Instrument Exercise Coach</h1>
-      <div className="nav">
-        {navItems.map((item) => (
-          <button
-            key={item.key}
-            className={screen === item.key ? "active" : ""}
-            onClick={() => setScreen(item.key)}
-          >
-            {item.label}
-          </button>
-        ))}
-      </div>
+    <AppScaffold
+      header={
+        <div style={{ marginBottom: 24 }}>
+          <div style={typography.title}>Solo Instrument Exercise Coach</div>
+        </div>
+      }
+      navItems={navItems}
+      activeKey={screen}
+      onNavChange={(key) => setScreen(key as ScreenKey)}
+    >
       <div className="stack">
-        {screen === "setup" && <InstrumentSetup instrument={instrument} onChange={updateInstrument} />}
+        {screen === "setup" && (
+          <InstrumentSetup
+            instrument={instrument}
+            onChange={updateInstrument}
+            preferredKeys={request.preferredKeys}
+            avoidedKeys={request.avoidedKeys}
+            onPreferredKeysChange={(keys) => setRequest({ ...request, preferredKeys: keys })}
+            onAvoidedKeysChange={(keys) => setRequest({ ...request, avoidedKeys: keys })}
+          />
+        )}
         {screen === "generate" && (
           <GeneratorScreen request={request} onRequestChange={setRequest} onGenerate={handleGenerate} />
         )}
@@ -93,14 +124,17 @@ export function App() {
           <PracticeScreen
             exercise={exercise}
             onSave={handleSave}
+            onGenerateVariation={handleVariation}
+            onLogPractice={handleLog}
             showNoteNames={showNoteNames}
             showSolfa={showSolfa}
             showNumbers={showNumbers}
-            onToggle={toggle}
+            showRoman={showRoman}
+            onToggle={toggleWithRoman}
           />
         )}
         {screen === "progress" && <ProgressScreen exercises={library} logs={logs} />}
       </div>
-    </div>
+    </AppScaffold>
   );
 }

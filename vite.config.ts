@@ -26,6 +26,7 @@ export default defineConfig({
       },
     }),
   ],
+  base: "/solo-instrument-coach/",
   server: { port: 5173 },
   test: {
     environment: "node",

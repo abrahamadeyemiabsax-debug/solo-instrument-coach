@@ -1,15 +1,25 @@
 import { Exercise } from "../models/types";
 import { midiToNoteName, midiToNumber, midiToSolfa, transposeMidi, noteNameToMidi } from "../notation/convert";
+import { EmptyStateCard } from "./ui/EmptyStateCard";
+import { StatPill } from "./ui/StatPill";
+import { typography } from "../app/designSystem";
 
 type Props = {
   exercise: Exercise | null;
   showNoteNames: boolean;
   showSolfa: boolean;
   showNumbers: boolean;
+  showRoman?: boolean;
 };
 
-export function ExerciseViewer({ exercise, showNoteNames, showSolfa, showNumbers }: Props) {
-  if (!exercise) return <div className="exercise">Generate an exercise to see it here.</div>;
+export function ExerciseViewer({ exercise, showNoteNames, showSolfa, showNumbers, showRoman = true }: Props) {
+  if (!exercise)
+    return (
+      <EmptyStateCard
+        title="No exercise yet"
+        message="Generate an exercise to see notation and playback controls here."
+      />
+    );
 
   const tonicMidi = noteNameToMidi(exercise.keyTonic + "4");
   const items = exercise.notes.map((n) => {
@@ -22,37 +32,37 @@ export function ExerciseViewer({ exercise, showNoteNames, showSolfa, showNumbers
   });
 
   return (
-    <div className="exercise stack">
+    <div className="stack">
       <div>
-        <span className="pill">{exercise.style}</span>
-        <span className="pill">{exercise.skillFocus}</span>
-        <span className="pill">{exercise.keyTonic}</span>
-        <span className="pill">{exercise.tempo} BPM</span>
-        <span className="pill">{exercise.subdivision}</span>
+        <StatPill text={exercise.style} />
+        <StatPill text={exercise.skillFocus} />
+        <StatPill text={exercise.keyTonic} />
+        <StatPill text={`${exercise.tempo} BPM`} />
+        <StatPill text={exercise.subdivision} />
       </div>
-      {exercise.metadata.romanContext && (
-        <div className="mono">
-          <span className="label">Roman:</span> {exercise.metadata.romanContext.barMap.join(" | ")}
+      {exercise.metadata.romanContext && showRoman && (
+        <div style={typography.mono}>
+          <span style={typography.label}>Roman:</span> {exercise.metadata.romanContext.barMap.join(" | ")}
         </div>
       )}
-      <div className="mono">
+      <div style={typography.mono}>
         {showNoteNames && (
           <div>
-            <span className="label">Notes:</span> {items.map((i) => i.note).join(" ")}
+            <span style={typography.label}>Notes:</span> {items.map((i) => i.note).join(" ")}
           </div>
         )}
         {showSolfa && (
           <div>
-            <span className="label">Solfa:</span> {items.map((i) => i.solfa).join(" ")}
+            <span style={typography.label}>Solfa:</span> {items.map((i) => i.solfa).join(" ")}
           </div>
         )}
         {showNumbers && (
           <div>
-            <span className="label">Numbers:</span> {items.map((i) => i.degree).join(" ")}
+            <span style={typography.label}>Numbers:</span> {items.map((i) => i.degree).join(" ")}
           </div>
         )}
       </div>
-      <div className="hint">
+      <div style={{ ...typography.body, color: "#5A5F66" }}>
         Articulation: {exercise.metadata.articulationHints.join(" • ")}
       </div>
     </div>

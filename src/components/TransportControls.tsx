@@ -1,6 +1,10 @@
 import { useMemo, useState } from "react";
 import { Exercise } from "../models/types";
 import { AudioPlayer } from "../audio/player";
+import { AppCard } from "./ui/AppCard";
+import { PrimaryButton, SecondaryButton } from "./ui/Buttons";
+import { InputRow } from "./ui/InputRow";
+import { controlStyle } from "../app/designSystem";
 
 type Props = {
   exercise: Exercise | null;
@@ -24,34 +28,34 @@ export function TransportControls({ exercise }: Props) {
   };
 
   return (
-    <div className="card stack">
-      <div className="label">Playback</div>
+    <AppCard>
+      <div className="stack">
+        <div style={{ fontWeight: 600 }}>Playback</div>
       <div className="row">
-        <button onClick={play} disabled={!exercise || isPlaying}>
+        <PrimaryButton onClick={play} disabled={!exercise || isPlaying}>
           Play
-        </button>
-        <button onClick={stop} disabled={!isPlaying}>
+        </PrimaryButton>
+        <SecondaryButton onClick={stop} disabled={!isPlaying}>
           Stop
-        </button>
+        </SecondaryButton>
       </div>
       <div className="row-3">
-        <label>
-          Count-in
-          <select value={countIn} onChange={(e) => setCountIn(Number(e.target.value))}>
+        <InputRow label="Count-in">
+          <select value={countIn} onChange={(e) => setCountIn(Number(e.target.value))} style={controlStyle}>
             <option value={1}>1</option>
             <option value={2}>2</option>
             <option value={4}>4</option>
           </select>
-        </label>
-        <label>
-          Slow Mode
-          <select value={slow} onChange={(e) => setSlow(Number(e.target.value))}>
+        </InputRow>
+        <InputRow label="Slow Mode">
+          <select value={slow} onChange={(e) => setSlow(Number(e.target.value))} style={controlStyle}>
             <option value={0.5}>50%</option>
             <option value={0.75}>75%</option>
             <option value={1}>100%</option>
           </select>
-        </label>
+        </InputRow>
       </div>
-    </div>
+      </div>
+    </AppCard>
   );
 }
