@@ -1,0 +1,1 @@
+if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/solo-instrument-coach/sw.js', { scope: '/solo-instrument-coach/' })})}
